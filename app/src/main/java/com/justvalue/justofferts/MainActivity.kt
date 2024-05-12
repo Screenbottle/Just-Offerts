@@ -24,6 +24,17 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import java.io.File
 import java.io.FileOutputStream
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.justvalue.justofferts.ui.main.CreateOfferScreen
+import com.justvalue.justofferts.ui.main.HomeScreen
+import com.justvalue.justofferts.ui.main.PreviouslyCreatedOffersScreen
+import com.justvalue.justofferts.ui.main.SendOfferScreen
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,7 +46,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    JustOfferts()
                 }
             }
         }
@@ -51,18 +62,27 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun PdfCreator() {
-    var kund by remember { mutableStateOf(TextFieldValue()) }
-    var kontaktperson by remember { mutableStateOf(TextFieldValue()) }
-
-    Column {
-        TextField(value = kund, onValueChange = { kund = it }, label = { Text("Kundnamn") })
-        TextField(value = kontaktperson, onValueChange = { kontaktperson = it }, label = { Text("Kontaktperson") })
-        Button(onClick = { generatePDF(kund.text, kontaktperson.text) }) {
-            Text("Generate PDF")
+fun JustOfferts() {
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = "homescreen") {
+        composable("homescreen") {
+            HomeScreen(navController = navController)
+        }
+        composable("create_offer") {
+            CreateOfferScreen(navController = navController)
+        }
+        composable("send_offer") {
+            SendOfferScreen(navController = navController)
+        }
+        composable("prev_created_offers") {
+            PreviouslyCreatedOffersScreen(navController = navController)
         }
     }
 }
+
+
+
+
 
 
 fun generatePDF(context: Context, kund: String, kontaktperson: String) {
@@ -75,6 +95,8 @@ fun generatePDF(context: Context, kund: String, kontaktperson: String) {
     // Draw text on the PDF
     val text = "Kund: $kund\nKontaktperson: $kontaktperson"
     canvas.drawText(text, 40f, 50f, Paint())
+
+    pdfDocument.finishPage(page)
 
     // Save the PDF to external storage
     val file = File(context.getExternalFilesDir(null), "output.pdf")

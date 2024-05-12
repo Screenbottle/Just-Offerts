@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:startDestination="@id/homescreen">
+
+    <composable android:id="@+id/homescreen"
+        android:name="com.justvalue.justofferts.ui.HomeScreen"
+        android:label="Home"
+        app:popUpTo="Home Screen"
+        app:popUpToInclusive="true" />
+
+    <composable android:id="@+id/create_offer"
+        android:name="com.justvalue.justofferts.ui.CreateOfferScreen"
+        android:label="Create Offer" />
+
+    <composable android:id="@+id/send_offer"
+        android:name="com.justvalue.justofferts.ui.SendOfferScreen"
+        android:label="Send Offer" />
+
+    <composable android:id="@+id/prev_created_offers"
+        android:name="com.justvalue.justofferts.ui.PreviouslyCreatedOffersScreen"
+        android:label="Previously Created Offers" />
+
+    <action android:id="@+id/action_home_screen_to_create_offer"
+        app:destination="@id/create_offer" />
+
+    <action android:id="@+id/action_home_screen_to_send_offer"
+        app:destination="@id/send_offer" />
+
+    <action android:id="@+id/action_home_screen_to_prev_created_offers"
+        app:destination="@id/prev_created_offers" />
+
+    <action android:id="@+id/action_create_offer_to_send_offer"
+        app:destination="@id/send_offer" />
+
+    <action android:id="@+id/action_prev_created_offers_to_send_offer"
+        app:destination="@id/send_offer" />
+
+</navigation>
