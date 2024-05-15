@@ -6,8 +6,8 @@
     <composable android:id="@+id/homescreen"
         android:name="com.justvalue.justofferts.ui.HomeScreen"
         android:label="Home"
-        app:popUpTo="Home Screen"
-        app:popUpToInclusive="true" />
+        app:popUpTo="@id/homescreen"
+        />
 
     <composable android:id="@+id/create_offer"
         android:name="com.justvalue.justofferts.ui.CreateOfferScreen"

@@ -85,27 +85,7 @@ fun JustOfferts() {
 
 
 
-fun generatePDF(context: Context, kund: String, kontaktperson: String) {
 
-    val pdfDocument = PdfDocument()
-    val pageInfo = PdfDocument.PageInfo.Builder(300, 600, 1).create()
-    val page = pdfDocument.startPage(pageInfo)
-    val canvas = page.canvas
-
-    // Draw text on the PDF
-    val text = "Kund: $kund\nKontaktperson: $kontaktperson"
-    canvas.drawText(text, 40f, 50f, Paint())
-
-    pdfDocument.finishPage(page)
-
-    // Save the PDF to external storage
-    val file = File(context.getExternalFilesDir(null), "output.pdf")
-    val outputStream = FileOutputStream(file)
-    pdfDocument.writeTo(outputStream)
-    pdfDocument.close()
-    outputStream.close()
-
-}
 
 @Preview(showBackground = true)
 @Composable
