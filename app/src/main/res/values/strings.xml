@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Just Offerts</string>
+    <string name="logo_description">Just Value Logo</string>
+
+    <string name="homescreen">Home Screen</string>
+    <string name="create_offer">Create Offer</string>
+    <string name="send_offer">Send Offer</string>
+    <string name="prev_created_offers">Previously Created Offers</string>
 </resources>

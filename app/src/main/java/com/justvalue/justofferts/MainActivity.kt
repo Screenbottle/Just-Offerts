@@ -34,6 +34,17 @@ import com.justvalue.justofferts.ui.main.PreviouslyCreatedOffersScreen
 import com.justvalue.justofferts.ui.main.SendOfferScreen
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.annotation.StringRes
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.rounded.Menu
 
 
 class MainActivity : ComponentActivity() {
@@ -61,23 +72,54 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     )
 }
 
+
+
 @Composable
 fun JustOfferts() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "homescreen") {
-        composable("homescreen") {
-            HomeScreen(navController = navController)
+    
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = navController.currentDestination?.route == "homescreen",
+                    onClick = { navController.navigate("homescreen") },
+                    icon = { Icons.Default.Home },
+                    label = { Text(text = "Start") }
+                )
+                NavigationBarItem(
+                    selected = navController.currentDestination?.route == "create_offer",
+                    onClick = { navController.navigate("create_offer") },
+                    icon = { Icons.Default.Add },
+                    label = { Text(text = "Skapa Offert") }
+                )
+                NavigationBarItem(
+                    selected = navController.currentDestination?.route == "send_offer",
+                    onClick = { navController.navigate("send_offer") },
+                    icon = { Icons.Default.Email },
+                    label = { Text(text = "Skicka Offert") }
+                )
+
+            }
         }
-        composable("create_offer") {
-            CreateOfferScreen(navController = navController)
-        }
-        composable("send_offer") {
-            SendOfferScreen(navController = navController)
-        }
-        composable("prev_created_offers") {
-            PreviouslyCreatedOffersScreen(navController = navController)
+    ) { innerPadding ->
+        NavHost(navController = navController, startDestination = "homescreen") {
+            composable("homescreen") {
+                HomeScreen(navController = navController, innerPadding)
+            }
+            composable("create_offer") {
+                CreateOfferScreen(navController = navController)
+            }
+            composable("send_offer") {
+                SendOfferScreen(navController = navController)
+            }
+            composable("prev_created_offers") {
+                PreviouslyCreatedOffersScreen(navController = navController)
+            }
         }
     }
+
+
 }
 
 

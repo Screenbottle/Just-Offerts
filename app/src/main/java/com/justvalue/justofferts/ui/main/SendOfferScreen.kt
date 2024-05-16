@@ -20,111 +20,145 @@ import android.provider.DocumentsContract
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import java.io.File
+import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
+import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.justvalue.justofferts.R
+import com.justvalue.justofferts.ui.theme.Optima
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SendOfferScreen(navController: NavHostController) {
     val context = LocalContext.current
     var emailAddress by remember { mutableStateOf(TextFieldValue()) }
     var selectedPdfUri by remember { mutableStateOf<Uri?>(null) }
-    val appFilesDirectory = File(LocalContext.current.getExternalFilesDir(null), "")
-    val initialUri = if (appFilesDirectory.exists()) Uri.fromFile(appFilesDirectory) else null
-
-    val launcher = selectPdf { uri ->
-        selectedPdfUri = uri
-    }
 
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = "Fyll i information")
-
-        TextField(value = emailAddress, onValueChange = { emailAddress = it }, label = { Text("E-post") })
-
-        Button(onClick = {
-            val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-                type = "application/pdf"
-                // Set initial directory
-                putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialUri)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        // Handle the selected file URI
+        uri?.let { documentUri ->
+            lifecycleOwner.lifecycleScope.launch {
+                val documentFile = DocumentFile.fromSingleUri(context, documentUri)
+                documentFile?.let { file ->
+                    selectedPdfUri = file.uri
+                }
             }
-            launcher.launch(intent)
-        }) {
-            Text("Select PDF")
         }
+    }
 
-        selectedPdfUri?.let {
-            Text("Selected PDF: ${it.path?.let { it1 -> File(it1).name }}")
+    // Function to send email with PDF attachment
+    fun sendEmailWithAttachment() {
+        selectedPdfUri?.let { pdfUri ->
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.type = "application/pdf"
+            intent.putExtra(Intent.EXTRA_STREAM, pdfUri)
+            intent.putExtra(Intent.EXTRA_EMAIL, arrayOf(emailAddress.text))
+            intent.putExtra(Intent.EXTRA_SUBJECT, "Subject")
+            intent.putExtra(Intent.EXTRA_TEXT, "Body")
+            context.startActivity(Intent.createChooser(intent, "Send Email"))
         }
+    }
 
-        Button(
-            onClick = { sendEmailAction(emailAddress.text, context, selectedPdfUri) },
-            enabled = emailAddress.text.isNotBlank() && selectedPdfUri != null
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                colors = TopAppBarColors(
+                    containerColor = colorResource(id = R.color.primary_container),
+                    titleContentColor = colorResource(id = R.color.black),
+                    navigationIconContentColor = colorResource(id = R.color.black),
+                    actionIconContentColor = colorResource(id = R.color.black),
+                    scrolledContainerColor = colorResource(id = R.color.black)
+                ),
+                title = {
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        style = TextStyle(fontSize = 30.sp, fontWeight = FontWeight.Bold, fontFamily = Optima)
+                    )
+                },
+                actions = {
+
+                }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Send Email")
-        }
+
+            Text(
+                text = "Fyll i information",
+                style = TextStyle(fontSize = 25.sp, fontWeight = FontWeight.Bold, fontFamily = Optima)
+                )
+            Spacer(modifier = Modifier.height(20.dp))
+            TextField(
+                value = emailAddress,
+                onValueChange = { emailAddress = it },
+                label = { Text("E-post") })
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Button(onClick = {
+                launcher.launch(arrayOf("application/pdf"))
+            }) {
+                Text("Välj Offert")
+            }
+
+            selectedPdfUri?.let {
+                Text("Vald Offert: ${it.path?.let { it1 -> File(it1).name }}")
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Button(
+                onClick = { sendEmailWithAttachment() },
+                enabled = emailAddress.text.isNotBlank() && selectedPdfUri != null
+            ) {
+                Text("Skicka Offert")
+            }
 
 
-
-    }
-
-}
-fun sendEmailAction(emailAddress: String, context: Context, pdfUri: Uri?): () -> Unit {
-    return {
-
-        val emailIntent = Intent(Intent.ACTION_SEND)
-        emailIntent.type = "application/pdf"
-        emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(emailAddress))
-        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Subject")
-        pdfUri?.let { uri ->
-            emailIntent.putExtra(Intent.EXTRA_STREAM, uri)
-        }
-        emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        context.startActivity(Intent.createChooser(emailIntent, "Send email..."))
-    }
-}
-
-
-@Composable
-fun selectPdf(onPdfSelected: (Uri?) -> Unit): ActivityResultLauncher<Intent> {
-    val context = LocalContext.current as ComponentActivity
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
-        // Handle the result
-        if (activityResult.resultCode == Activity.RESULT_OK) {
-            val data: Intent? = activityResult.data
-            val uri = data?.data
-            onPdfSelected(uri)
-        }
-    }
-    return launcher
-}
-
-
-
-
-@Composable
-fun rememberLauncherForActivityResult(
-    contract: ActivityResultContract<Intent, ActivityResult>,
-    onResult: (Uri?) -> Unit
-): ActivityResultLauncher<Intent> {
-    val context = LocalContext.current as ComponentActivity
-    return remember(context) {
-        context.activityResultRegistry.register("key", contract) { result ->
-            val data: Intent? = result.data
-            val uri = data?.data
-            onResult(uri)
         }
     }
+
 }
 
